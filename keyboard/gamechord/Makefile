@@ -49,9 +49,11 @@ TARGET_DIR = .
 
 # keyboard dependent files
 SRC =	keymap_common.c \
-	keymap_plain.c \
 	led.c \
 	matrix.c
+
+#SRC := keymap_plain.c $(SRC)
+SRC := keymap_halfqwerty.c $(SRC)
 
 CONFIG_H = config.h
 
@@ -76,7 +78,7 @@ F_CPU = 16000000
 #   comment out to disable the options.
 #
 BOOTMAGIC_ENABLE = yes	# Virtual DIP switch configuration(+1000)
-#MOUSEKEY_ENABLE = yes	# Mouse keys(+5000)
+MOUSEKEY_ENABLE = yes	# Mouse keys(+5000)
 EXTRAKEY_ENABLE = yes	# Audio control and System control(+600)
 CONSOLE_ENABLE = yes    # Console for debug
 COMMAND_ENABLE = yes    # Commands for debug and configuration
