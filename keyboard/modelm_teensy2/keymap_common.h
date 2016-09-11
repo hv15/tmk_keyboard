@@ -13,9 +13,8 @@
 #include "debug.h"
 #include "keymap.h"
 
-
 extern const uint8_t keymaps[][MATRIX_ROWS][MATRIX_COLS];
-extern const uint16_t fn_actions[];
+extern const action_t fn_actions[];
 
 #define KEYMAP( \
     K5A,      K5B, K5C, K5D, K5E,   K5F, K5G, K5H, K5I,   K5J, K5K, K5L, K5M,   K5N, K5O, K5P, \
