@@ -8,12 +8,9 @@ TMK_DIR = ../../tmk_core
 TARGET_DIR = .
 
 # project specific files
-SRC =	keymap_common.c 	matrix.c 	led.c
-
-SRC := keymap.c $(SRC)
+SRC = keymap.c keymap_common.c matrix.c led.c
 
 CONFIG_H = config.h
-
 
 # MCU name
 MCU = atmega32u4
@@ -38,8 +35,8 @@ OPT_DEFS += -DBOOTLOADER_SIZE=512
 
 # Build Options
 BOOTMAGIC_ENABLE = yes	# Virtual DIP switch configuration(+1000)
-MOUSEKEY_ENABLE = yes	# Mouse keys(+4700)
-EXTRAKEY_ENABLE = yes	# Audio control and System control(+450)
+#MOUSEKEY_ENABLE = yes	# Mouse keys(+4700)
+#EXTRAKEY_ENABLE = yes	# Audio control and System control(+450)
 CONSOLE_ENABLE = yes	# Console for debug(+400)
 COMMAND_ENABLE = yes    # Commands for debug and configuration
 NKRO_ENABLE = yes	    # USB Nkey Rollover - not yet supported in LUFA
@@ -49,6 +46,7 @@ NKRO_ENABLE = yes	    # USB Nkey Rollover - not yet supported in LUFA
 VPATH += $(TARGET_DIR)
 VPATH += $(TMK_DIR)
 
-include $(TMK_DIR)/protocol/lufa.mk
+include $(TMK_DIR)/protocol.mk
+include $(TMK_DIR)/protocol/pjrc.mk
 include $(TMK_DIR)/common.mk
 include $(TMK_DIR)/rules.mk

@@ -20,11 +20,10 @@ static matrix_row_t matrix_debouncing[MATRIX_ROWS];
 static matrix_row_t matrix_reversed[MATRIX_COLS];
 static matrix_row_t matrix_reversed_debouncing[MATRIX_COLS];
 
-static matrix_row_t read_cols(void);
-static void init_cols(void);
-static void unselect_rows(void);
-static void select_row(uint8_t row);
-
+static matrix_row_t read_rows(void);
+static void init_rows(void);
+static void unselect_cols(void);
+static void select_col(uint8_t col);
 
 inline
 uint8_t matrix_rows(void)
@@ -40,27 +39,34 @@ uint8_t matrix_cols(void)
 
 void matrix_init(void)
 {
+    debug_enable = true;
+    debug_matrix = true;
+
     // disable JTAG
     MCUCR |= (1 << JTD);
     MCUCR |= (1 << JTD);
 
     // initialize row and col
-    unselect_rows();
-    init_cols();
+    unselect_cols();
+    init_rows();
 
     // initialize matrix state: all keys off
     for (uint8_t i=0; i < MATRIX_ROWS; i++) {
         matrix[i] = 0;
         matrix_debouncing[i] = 0;
     }
+    for (uint8_t i=0; i < MATRIX_COLS; i++) {
+        matrix_reversed[i] = 0;
+        matrix_reversed_debouncing[i] = 0;
+    }
 }
 
 uint8_t matrix_scan(void)
 {
     for (uint8_t i = 0; i < MATRIX_COLS; i++) {
-        select_row(i);
+        select_col(i);
         _delay_us(30);  // without this wait read unstable value.
-        matrix_row_t rows = read_cols();
+        matrix_row_t rows = read_rows();
         if (matrix_reversed_debouncing[i] != rows) {
             matrix_reversed_debouncing[i] = rows;
             if (debouncing) {
@@ -68,7 +74,7 @@ uint8_t matrix_scan(void)
             }
             debouncing = DEBOUNCE;
         }
-        unselect_rows();
+        unselect_cols();
     }
 
     if (debouncing) {
@@ -112,10 +118,10 @@ matrix_row_t matrix_get_row(uint8_t row)
 
 void matrix_print(void)
 {
-    print("\nr/c 0123456789ABCDEF\n");
+    print("\nr/c 01234567\n");
     for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
         phex(row); print(": ");
-        pbin_reverse16(matrix_get_row(row));
+        pbin_reverse(matrix_get_row(row));
         print("\n");
     }
 }
@@ -129,7 +135,11 @@ uint8_t matrix_key_count(void)
     return count;
 }
 
-static void init_cols(void) {
+/* Row pin configuration
+ * row: 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15
+ * pin: B0 B1 B2 B3 B7 D0 D1 D2 D3 C6 C7 B4 D7 E6 D4 D5 Teensy 2.0
+ */
+static void init_rows(void) {
     DDRB  &= ~(1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 7 | 1 << 4);
     PORTB |=  (1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 7 | 1 << 4);
     DDRD  &= ~(1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 7 | 1 << 4 | 1 << 5);
@@ -140,7 +150,7 @@ static void init_cols(void) {
     PORTE |=  (1 << 6);
 }
 
-static matrix_row_t read_cols(void) {
+static matrix_row_t read_rows(void) {
     return
         (PINB & (1 << 0) ? 0 : (1UL <<  0)) |
         (PINB & (1 << 1) ? 0 : (1UL <<  1)) |
@@ -160,15 +170,23 @@ static matrix_row_t read_cols(void) {
         (PIND & (1 << 5) ? 0 : (1UL << 15));
 }
 
-static void unselect_rows(void) {
-    DDRF  &= ~0b11110011;
+/* Column pin configuration
+ * col: 0  1  2  3  4  5  6  7
+ * pin: F0 F1 F4 F5 F6 F7 B6 B5 Teensy 2.0
+ */
+static void unselect_cols(void) {
+/*    DDRF  &= ~0b11110011;
     PORTF &= ~0b11110011;
     DDRB  &= ~0b01100000;
-    PORTB &= ~0b01100000;
+    PORTB &= ~0b01100000;*/
+    DDRF  |= (1<<0 | 1<<1 | 1<<4 | 1<<5 | 1<<6 | 1<<7);
+    PORTF |= (1<<0 | 1<<1 | 1<<4 | 1<<5 | 1<<6 | 1<<7);
+    DDRB  |= (1<<6 | 1<<5);
+    PORTB |= (1<<6 | 1<<5);
 }
 
-static void select_row(uint8_t row) {
-    switch (row) {
+static void select_col(uint8_t col) {
+    switch (col) {
         case 0:
             DDRF  |=  (1 << 0);
             PORTF &= ~(1 << 0);
