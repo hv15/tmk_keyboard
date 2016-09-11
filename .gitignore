@@ -13,3 +13,5 @@ build/
 *.bak
 .DS_Store
 *.swp
+!converter/*/binary/*.hex
+!keyboard/*/binary/*.hex
