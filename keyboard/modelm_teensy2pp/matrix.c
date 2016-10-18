@@ -36,32 +36,12 @@ static void unselect_cols(void);
 static void select_col(uint8_t col);
 
 #ifndef SLEEP_LED_ENABLE
-/* LEDs are on output compare pins OC1B OC1C
-   This activates fast PWM mode on them.
-   Prescaler 256 and 8-bit counter results in
-   16000000/256/256 = 244 Hz blink frequency.
-   LED_A: Caps Lock
-   LED_B: Scroll Lock  */
-/* Output on PWM pins are turned off when the timer 
-   reaches the value in the output compare register,
-   and are turned on when it reaches TOP (=256). */
 static
 void setup_leds(void)
 {
-    /*
-    TCCR1A |=      // Timer control register 1A
-        (1<<WGM10) | // Fast PWM 8-bit
-        (1<<COM1B1)| // Clear OC1B on match, set at TOP
-        (1<<COM1C1); // Clear OC1C on match, set at TOP
-    TCCR1B |=      // Timer control register 1B
-        (1<<WGM12) | // Fast PWM 8-bit
-        (1<<CS12);   // Prescaler 256
-    OCR1B = LED_BRIGHTNESS;    // Output compare register 1B
-    OCR1C = LED_BRIGHTNESS;    // Output compare register 1C
-    // LEDs: LED_A -> PORTB6, LED_B -> PORTB7
-    DDRB  |= (1<<6) | (1<<7);
-    PORTB  &= ~((1<<6) | (1<<7));
-    */
+    // LEDs: LED_A -> PORTB6, LED_B -> PORTB5, LED_C -> PORTB4
+    DDRF  |= (1<<4) | (1<<5) | (1<<6);
+    PORTF  &= ~((1<<4) | (1<<5) | (1<<6));
 }
 #endif
 
@@ -241,50 +221,49 @@ static uint16_t read_rows(void)
  * col:  0  1  2  3  4  5  6  7
  * pin: F0 F1 F2 F3 F4 F5 F6 E7
  * pin: B6 B5 B4 B3 B2 B1 B0 E7 Teensy 2.0++
+ * pin: F0 F1 F2 F3 F4 F5 F6 F7 Teensy 2.0++
  */
 static void unselect_cols(void)
 {
     // Hi-Z(DDR:0, PORT:0) to unselect
-    DDRB  |= 0b01111111; // PB: 7 6 5 4 3 2 1 0
-    PORTB |= 0b01111111; // PB: 7 6 5 4 3 2 1 0
-    DDRE  |= 0b10000000;
-    PORTE |= 0b10000000;
+    DDRF  |= 0b11111111; // PB: 7 6 5 4 3 2 1 0
+    PORTF |= 0b11111111; // PB: 7 6 5 4 3 2 1 0
 }
 
 static void select_col(uint8_t col)
 {
     switch (col) {
-        case 0:
-            DDRB  |=  (1 << 6);
-            PORTB &= ~(1 << 6);
-            break;
-        case 1:
-            DDRB  |=  (1 << 5);
-            PORTB &= ~(1 << 5);
-            break;
-        case 2:
-            DDRB  |=  (1 << 4);
-            PORTB &= ~(1 << 4);
-            break;
-        case 3:
-            DDRB  |=  (1 << 3);
-            PORTB &= ~(1 << 3);
-            break;
-        case 4:
-            DDRB  |=  (1 << 2);
-            PORTB &= ~(1 << 2);
+        case 6:
+            DDRF  |=  (1 << 6);
+            PORTF &= ~(1 << 6);
             break;
         case 5:
-            DDRB  |=  (1 << 1);
-            PORTB &= ~(1 << 1);
+            DDRF  |=  (1 << 5);
+            PORTF &= ~(1 << 5);
             break;
-        case 6:
-            DDRB  |=  (1 << 0);
-            PORTB &= ~(1 << 0);
+        case 4:
+            DDRF  |=  (1 << 4);
+            PORTF &= ~(1 << 4);
+            break;
+        case 3:
+            DDRF  |=  (1 << 3);
+            PORTF &= ~(1 << 3);
+            break;
+        case 2:
+            DDRF  |=  (1 << 2);
+            PORTF &= ~(1 << 2);
+            break;
+        case 1:
+            DDRF  |=  (1 << 1);
+            PORTF &= ~(1 << 1);
+            break;
+        case 0:
+            DDRF  |=  (1 << 0);
+            PORTF &= ~(1 << 0);
             break;
         case 7:
-            DDRE  |=  (1 << 7);
-            PORTE &= ~(1 << 7);
+            DDRF  |=  (1 << 7);
+            PORTF &= ~(1 << 7);
             break;
         default:
             dprint("WTF"); dprintln();
